@@ -11,6 +11,15 @@ module CriticalPathCss
       expires_in: nil
     )
   end
+  
+  def self.generate_for_controller_action(controller, action, route)
+    Rails.cache.write(
+      controller + "#" + action,
+      CssFetcher.new.fetch_route(route),
+      namespace: CACHE_NAMESPACE,
+      expires_in: nil
+    )
+  end
 
   def self.generate_all
     CssFetcher.new.fetch.each do |route, css|
@@ -28,5 +37,9 @@ module CriticalPathCss
 
   def self.fetch(route)
     Rails.cache.read(route, namespace: CACHE_NAMESPACE) || ''
+  end
+  
+  def self.fetch_for_controller_action(controller, action)
+    Rails.cache.read(controller + "#" + action, namespace: CACHE_NAMESPACE) || ''
   end
 end
