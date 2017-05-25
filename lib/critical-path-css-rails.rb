@@ -16,14 +16,17 @@ module CriticalPathCss
     )
   end
   
-  def self.generate_for_controller_action(controller, action, asset_digest, route)
+  def self.generate_for_controller_action(controller, action, asset_digest, route, must_have)
     cache_key = CriticalPathCss.cache_key(controller, action, asset_digest)
-    Rails.cache.write(
-      cache_key,
-      CssFetcher.new.fetch_route(route),
-      namespace: CACHE_NAMESPACE,
-      expires_in: 7.days
-    )
+    critical_css =  CssFetcher.new.fetch_route(route)
+    if critical_css.include? must_have
+       Rails.cache.write(
+        cache_key,
+        critical_css,
+        namespace: CACHE_NAMESPACE,
+        expires_in: 7.days
+      )
+    end
     $redis.del(cache_key)
   end
 
